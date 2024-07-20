@@ -1,0 +1,14 @@
+<po-page-default p-title="Realizar Cadastro">
+  <po-container>
+    <po-input p-label="Nome" [(ngModel)]="animal.name" name="name"></po-input>
+    <po-input p-label="Raça" [(ngModel)]="animal.race" name="race"></po-input>
+    <po-upload
+    [p-required-url]="false"
+    [p-label]="'Selecionar Imagem'"
+    [p-multiple]="false"
+    (ngModelChange)="onFileChange($event)"
+  >
+  </po-upload>
+  </po-container>
+  <po-button style="margin-top: 20px;" p-label="Cadastrar" (p-click)="updateAnimal()"></po-button>
+  </po-page-default>

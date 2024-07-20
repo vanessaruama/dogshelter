@@ -1,0 +1,42 @@
+.toolbarNav {
+  position: fixed;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-around;
+  padding: 2em;
+  background-color: rgb(243, 242, 174);
+  -webkit-box-shadow: 3px 3px 5px 6px #ccc;
+  -moz-box-shadow: 3px 3px 5px 6px #ccc;
+  box-shadow: 2px 2px 4px 5px #ccc;
+}
+
+.toolbarNav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 120px;
+  margin: 0 5px;
+}
+
+.toolbarNav mat-icon {
+  font-size: 20px; /* Ajuste o tamanho conforme necessário */
+  margin-bottom: 15px; /* Espaço entre o ícone e o texto */
+}
+
+.toolbarNav span {
+  display: block;
+  white-space: normal; /* Permite quebra de linha no texto */
+  line-height: 0.2; /* Ajusta a altura da linha para evitar sobreposição */
+  font-size: 14px; /* Ajuste conforme necessário */
+}
+
+button:hover,
+.active-link {
+  color: rgb(141, 12, 61);
+}
+
+button:not(:hover) {
+  color: black; /* Cor do texto padrão */
+}

@@ -1,1 +1,17 @@
-/* You can add global styles to this file, and also import other style files */
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+po-input {
+  --background: rgb(214, 168, 179);
+  --background-focus-color: red;
+}
+
+:root {
+  --color-brand-01-base: #f2f2f2;
+  --color-neutral-light-00: rgb(102, 36, 51);
+  --color-neutral-light-05: rgb(102, 36, 51);
+  --color-neutral-dark-70: #f2f2f2;
+  --color-neutral-dark-90: #f2f2f2;
+  --color-brand-01-lightest: rgb(102, 36, 51);
+  --color-feedback-info-base: black;
+}

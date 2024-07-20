@@ -1,0 +1,26 @@
+<po-page-default>
+  <po-container>
+      <po-login
+        class="po-sm-12"
+        name="userLogin"
+        [(ngModel)]="userLogin"
+        p-clean
+        p-label="Usuário"
+        p-placeholder="admin"
+        p-required
+      >
+      </po-login>
+
+      <po-password
+        class="po-sm-12"
+        name="userPassword"
+        [(ngModel)]="userPassword"
+        p-clean
+        p-label="Senha"
+        p-placeholder="senha"
+        p-required
+      >
+      </po-password>
+    </po-container>
+    <po-button class="po-sm-6" style="margin-top: 10px;" p-label="Logar" (p-click)="confirmAction()"> </po-button>
+</po-page-default>
