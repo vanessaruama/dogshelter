@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environment/environment';
 
 // Defina o tipo Animal com as propriedades que você espera
 interface Animal {
@@ -17,6 +18,7 @@ interface Animal {
 })
 export class EditAnimalComponent implements OnInit {
   animal: any = {};
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private route: ActivatedRoute,
@@ -28,7 +30,7 @@ export class EditAnimalComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
 
     if (id) {
-      this.http.get<Animal>(`http://localhost:3001/animals/${id}`)
+      this.http.get<Animal>(`${this.apiUrl}/animals/${id}`)
         .subscribe({
           next: data => {
             this.animal = data;
@@ -44,7 +46,7 @@ export class EditAnimalComponent implements OnInit {
 
   updateAnimal(): void {
     if (this.animal && this.animal.id) {
-      this.http.put(`http://localhost:3001/animals/${this.animal.id}`, this.animal)
+      this.http.put(`${this.apiUrl}/animals/${this.animal.id}`, this.animal)
         .subscribe({
           next: response => {
             console.log('Animal updated successfully:', response);

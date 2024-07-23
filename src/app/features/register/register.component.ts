@@ -1,8 +1,9 @@
 import { Component, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { PoNotification, PoNotificationService, PoUploadComponent } from '@po-ui/ng-components';
+import { PoNotificationService, PoUploadComponent } from '@po-ui/ng-components';
 import { v4 as uuidv4 } from 'uuid';
+import { environment } from '../../../environment/environment';
 
 @Component({
   selector: 'app-register',
@@ -11,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class RegisterComponent {
   selectedFile: string | null = null;
+  private apiUrl = environment.apiUrl;
   animal = {
     name: '',
     race: ''
@@ -53,7 +55,7 @@ export class RegisterComponent {
       };
 
       console.log(animalData);
-      this.http.post('http://localhost:3001/animals', animalData)
+      this.http.post(`${this.apiUrl}/animals`, animalData)
         .subscribe({
           next: response => {
             this.poNotification.success(`Doguinho cadastrado`);

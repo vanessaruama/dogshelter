@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { environment } from '../../../environment/environment';
 
 interface Animal {
   name: string;
@@ -18,13 +19,14 @@ export class DogsComponent implements OnInit {
   animals: Animal[] = [];
   isAdmin: boolean = false;
   filteredAnimals: any[] = [];
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit(): void {
     this.isAdmin = sessionStorage.getItem('isLoggedIn') === 'true';
 
-    this.http.get<Animal[]>('http://localhost:3001/animals')
+    this.http.get<Animal[]>(`${this.apiUrl}/animals`)
       .subscribe(data => {
         this.animals = data;
         this.filteredAnimals = [...this.animals];
@@ -32,7 +34,7 @@ export class DogsComponent implements OnInit {
   }
 
   deleteAnimal(id: string): void {
-    this.http.delete(`http://localhost:3001/animals/${id}`)
+    this.http.delete(`${this.apiUrl}/animals/${id}`)
       .subscribe(response => {
         console.log('Animal deleted successfully:', response);
         this.animals = this.animals.filter(animal => animal.id !== id);
