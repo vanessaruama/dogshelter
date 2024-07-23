@@ -56,6 +56,7 @@ initializeDatabase();
 /** ------------------------------------  */
 // ------------ API'S ---------------------
 /** ------------------------------------  */
+app.use(express.static(path.join(__dirname, '../../dist/dog-app')));
 
 // Rota para upload de arquivos
 app.post('/upload', (req, res) => {
