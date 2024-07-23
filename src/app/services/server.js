@@ -53,10 +53,15 @@ async function initializeDatabase() {
 // Chamar a função para criar tabelas ao iniciar o servidor
 initializeDatabase();
 
+app.use(express.static(path.join(__dirname, '../../dist/dog-app')));
+// Rota padrão para redirecionar para o frontend
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '../../dist/dog-app/index.html'));
+});
+
 /** ------------------------------------  */
 // ------------ API'S ---------------------
 /** ------------------------------------  */
-app.use(express.static(path.join(__dirname, '../../dist/dog-app')));
 
 // Rota para upload de arquivos
 app.post('/upload', (req, res) => {
