@@ -1,189 +1,116 @@
 const express = require('express');
 const multer = require('multer');
-const fs = require('fs');
 const cors = require('cors');
+const { Pool } = require('pg');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid'); // Para gerar IDs únicos
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 // Configuração do Multer para armazenamento de arquivos em memória
 const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 100 * 1024 * 1024 // Limite de 100MB
-  }
-});
+const upload = multer({ storage });
 
 app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Path para criar o arquivo animalData
-const animalDataPath = path.join(__dirname, 'animalData.json');
-
-// Função para converter buffer em base64
-const bufferToBase64 = (buffer, mimetype) => {
-  return `data:${mimetype};base64,${buffer.toString('base64')}`;
-};
-
+// Configuração do PostgreSQL
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: 5432,
+  ssl: { rejectUnauthorized: false }
+});
 /** ------------------------------------  */
 // ------------ API'S ---------------------
 /** ------------------------------------  */
 
 // Rota para upload de arquivos
 app.post('/upload', (req, res) => {
-  console.log("Início do upload");
-
-  upload.single('file')(req, res, (err) => {
-    if (err) {
-      console.error("Erro no upload:", err);
-      return res.status(500).send("Erro no upload");
-    }
-
-    console.log("Arquivo recebido:", req.file);
-
-    if (!req.file) {
-      console.log("Nenhum arquivo enviado");
-      return res.status(400).send('Nenhuma imagem carregada.');
-    }
+  upload.single('file')(req, res, async (err) => {
+    if (err) return res.status(500).send("Erro no upload");
+    if (!req.file) return res.status(400).send('Nenhuma imagem carregada.');
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
     try {
-      const base64Image = bufferToBase64(req.file.buffer, req.file.mimetype);
-
-      // Salvar a imagem em um arquivo JSON
-      const imageData = {
-        image: base64Image,
-        filename: req.file.originalname
-      };
-
-      fs.writeFileSync('imageData.json', JSON.stringify(imageData, null, 2));
-
-      res.json({
-        success: true,
-        message: 'Arquivo enviado e salvo como base64 com sucesso',
-        file: imageData
-      });
+      await pool.query('INSERT INTO images (image, filename) VALUES ($1, $2)', [base64Image, req.file.originalname]);
+      res.json({ success: true, message: 'Arquivo enviado e salvo como base64 com sucesso' });
     } catch (error) {
-      console.error("Erro ao processar o arquivo:", error);
       res.status(500).send("Erro ao processar o arquivo");
     }
   });
 });
 
 // Obter imagens
-app.get('/images', (_req, res) => {
-  console.log("Requisição para obter imagens");
-
+app.get('/images', async (_req, res) => {
   try {
-    const imageData = fs.readFileSync('imageData.json', 'utf8');
-    res.json(JSON.parse(imageData));
+    const result = await pool.query('SELECT * FROM images');
+    res.json(result.rows);
   } catch (error) {
-    console.error("Erro ao ler o arquivo JSON:", error);
-    res.status(500).send("Erro ao ler o arquivo JSON");
+    res.status(500).send("Erro ao ler o banco de dados");
   }
 });
 
-// Obter todos os animais
-app.get('/animals', (_req, res) => {
+// CRUD para animais
+app.get('/animals', async (_req, res) => {
   try {
-    const animals = readData();
-    res.json(animals);
+    const result = await pool.query('SELECT * FROM animals');
+    res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao ler o json', error });
+    res.status(500).json({ message: 'Erro ao ler o banco de dados', error });
   }
 });
 
-// Obter um animal por ID
-app.get('/animals/:id', (req, res) => {
+app.get('/animals/:id', async (req, res) => {
   const id = req.params.id;
   try {
-    const animals = readData();
-    const animal = animals.find(a => a.id === id);
-    if (animal) {
-      res.json(animal);
+    const result = await pool.query('SELECT * FROM animals WHERE id = $1', [id]);
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
     } else {
       res.status(404).json({ message: 'Animal não encontrado' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error ao ler o json', error });
+    res.status(500).json({ message: 'Erro ao ler o banco de dados', error });
   }
 });
 
-// Criar um novo animal
-app.post('/animals', (req, res) => {
+app.post('/animals', async (req, res) => {
   const { name, race, image } = req.body;
-  const newAnimal = {
-    id: uuidv4(), // Gerar um ID único
-    name,
-    race,
-    image
-  };
-
+  const id = uuidv4();
   try {
-    const animals = readData();
-    animals.push(newAnimal);
-    writeData(animals);
-    res.status(201).json(newAnimal);
+    await pool.query('INSERT INTO animals (id, name, race, image) VALUES ($1, $2, $3, $4)', [id, name, race, image]);
+    res.status(201).json({ id, name, race, image });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar o animal', error });
   }
 });
 
-// Atualizar um animal por ID
-app.put('/animals/:id', (req, res) => {
+app.put('/animals/:id', async (req, res) => {
   const id = req.params.id;
-  const updatedAnimal = req.body;
+  const { name, race, image } = req.body;
   try {
-    const animals = readData();
-    const index = animals.findIndex(a => a.id === id);
-    if (index !== -1) {
-      animals[index] = { ...animals[index], ...updatedAnimal };
-      writeData(animals);
-      res.json({ message: 'Informações do animal salvas com sucesso' });
-    } else {
-      res.status(404).json({ message: 'Animal não encontrado' });
-    }
+    await pool.query('UPDATE animals SET name = $1, race = $2, image = $3 WHERE id = $4', [name, race, image, id]);
+    res.json({ message: 'Informações do animal atualizadas com sucesso' });
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar informações', error });
+    res.status(500).json({ message: 'Erro ao atualizar o animal', error });
   }
 });
 
-/**
- * Api para deletar um animal por ID
-*/
-app.delete('/animals/:id', (req, res) => {
+app.delete('/animals/:id', async (req, res) => {
   const id = req.params.id;
   try {
-    let animals = readData();
-    animals = animals.filter(a => a.id !== id);
-    writeData(animals);
+    await pool.query('DELETE FROM animals WHERE id = $1', [id]);
     res.json({ message: 'Animal deletado com sucesso' });
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao deletar animal. Erro: ', error });
+    res.status(500).json({ message: 'Erro ao deletar o animal', error });
   }
 });
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-
-/** ------------------------------------  */
-// ------------ FUNÇÕES---------------------
-/** ------------------------------------  */
-
-// Função auxiliar para ler dados do arquivo JSON
-function readData() {
-  if (fs.existsSync(animalDataPath)) {
-    const rawData = fs.readFileSync(animalDataPath, 'utf8');
-    return JSON.parse(rawData);
-  }
-  return [];
-}
-
-// Função auxiliar para escrever dados no arquivo JSON
-function writeData(data) {
-  fs.writeFileSync(animalDataPath, JSON.stringify(data, null, 2));
-}
