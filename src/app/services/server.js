@@ -55,11 +55,6 @@ initializeDatabase();
 
 app.use(express.static(path.join(__dirname, '../../dist/dog-app')));
 
-// Rota padrão para redirecionar para o frontend
-app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, '../../dist/dog-app'));
-});
-
 /** ------------------------------------  */
 // ------------ API'S ---------------------
 /** ------------------------------------  */
