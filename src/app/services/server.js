@@ -53,8 +53,15 @@ async function initializeDatabase() {
 // Chamar a função para criar tabelas ao iniciar o servidor
 initializeDatabase();
 
-app.use(express.static(path.join(__dirname, '../../dist/dog-app')));
+const publicPath = path.join(__dirname, '../../dist/dog-app');
 
+// Middleware para servir arquivos estáticos
+app.use(express.static(publicPath));
+
+// Rota padrão para redirecionar para o frontend
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
 /** ------------------------------------  */
 // ------------ API'S ---------------------
 /** ------------------------------------  */
@@ -143,4 +150,14 @@ app.delete('/animals/:id', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+});
+
+//teste de pastas
+const fs = require('fs');
+
+app.get('/files', (_req, res) => {
+  fs.readdir(publicPath, (err, files) => {
+    if (err) return res.status(500).send('Erro ao listar arquivos');
+    res.send(files);
+  });
 });
