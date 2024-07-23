@@ -25,6 +25,34 @@ const pool = new Pool({
   port: 5432,
   ssl: { rejectUnauthorized: false }
 });
+
+// Função para criar tabelas
+async function initializeDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS animals (
+        id UUID PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        race VARCHAR(255),
+        image TEXT
+      );
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS images (
+        id SERIAL PRIMARY KEY,
+        image TEXT NOT NULL,
+        filename VARCHAR(255) NOT NULL
+      );
+    `);
+    console.log('Tabelas criadas ou já existentes');
+  } catch (error) {
+    console.error('Erro ao criar tabelas', error);
+  }
+}
+
+// Chamar a função para criar tabelas ao iniciar o servidor
+initializeDatabase();
+
 /** ------------------------------------  */
 // ------------ API'S ---------------------
 /** ------------------------------------  */
