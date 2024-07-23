@@ -1,10 +1,14 @@
-const express = require('express');
-const multer = require('multer');
-const cors = require('cors');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
-const SquidCloud = require('squid-cloud'); // Importa a biblioteca Squid Cloud
+import express from 'express';
+import multer from 'multer';
+import cors from 'cors';
+import { Pool } from 'pg';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -17,18 +21,41 @@ app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Configuração do Squid Cloud
-const squidCloud = new SquidCloud({
-  apiKey: process.env.SQUID_API_KEY, // Substitua pelo seu API Key do Squid Cloud
-  apiUrl: process.env.SQUID_API_URL // Substitua pela URL da API do Squid Cloud
+// Configuração do PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL
 });
 
-// Funções para interagir com o Squid Cloud
-const animalCollection = squidCloud.collection('animals');
-const imageCollection = squidCloud.collection('images');
+// Função para criar tabelas
+async function initializeDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS animals (
+        id UUID PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        race VARCHAR(255),
+        image TEXT
+      );
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS images (
+        id SERIAL PRIMARY KEY,
+        image TEXT NOT NULL,
+        filename VARCHAR(255) NOT NULL
+      );
+    `);
+    console.log('Tabelas criadas ou já existentes');
+  } catch (error) {
+    console.error('Erro ao criar tabelas', error);
+  }
+}
+
+// Chamar a função para criar tabelas ao iniciar o servidor
+initializeDatabase();
+
+const publicPath = path.join(__dirname, '../../dist/dog-app');
 
 // Middleware para servir arquivos estáticos
-const publicPath = path.join(__dirname, '../../dist/dog-app');
 app.use(express.static(publicPath));
 
 // Rota padrão para redirecionar para o frontend
@@ -48,10 +75,7 @@ app.post('/upload', (req, res) => {
     const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
 
     try {
-      await imageCollection.insert({
-        image: base64Image,
-        filename: req.file.originalname
-      });
+      await pool.query('INSERT INTO images (image, filename) VALUES ($1, $2)', [base64Image, req.file.originalname]);
       res.json({ success: true, message: 'Arquivo enviado e salvo como base64 com sucesso' });
     } catch (error) {
       res.status(500).send("Erro ao processar o arquivo");
@@ -62,8 +86,8 @@ app.post('/upload', (req, res) => {
 // Obter imagens
 app.get('/images', async (_req, res) => {
   try {
-    const images = await imageCollection.find().toArray();
-    res.json(images);
+    const result = await pool.query('SELECT * FROM images');
+    res.json(result.rows);
   } catch (error) {
     res.status(500).send("Erro ao ler o banco de dados");
   }
@@ -72,8 +96,8 @@ app.get('/images', async (_req, res) => {
 // CRUD para animais
 app.get('/animals', async (_req, res) => {
   try {
-    const animals = await animalCollection.find().toArray();
-    res.json(animals);
+    const result = await pool.query('SELECT * FROM animals');
+    res.json(result.rows);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao ler o banco de dados', error });
   }
@@ -82,9 +106,9 @@ app.get('/animals', async (_req, res) => {
 app.get('/animals/:id', async (req, res) => {
   const id = req.params.id;
   try {
-    const animal = await animalCollection.findOne({ id });
-    if (animal) {
-      res.json(animal);
+    const result = await pool.query('SELECT * FROM animals WHERE id = $1', [id]);
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
     } else {
       res.status(404).json({ message: 'Animal não encontrado' });
     }
@@ -97,14 +121,8 @@ app.post('/animals', async (req, res) => {
   const { name, race, image } = req.body;
   const id = uuidv4();
   try {
-    const newAnimal = {
-      id,
-      name,
-      race,
-      image
-    };
-    await animalCollection.insert(newAnimal);
-    res.status(201).json(newAnimal);
+    await pool.query('INSERT INTO animals (id, name, race, image) VALUES ($1, $2, $3, $4)', [id, name, race, image]);
+    res.status(201).json({ id, name, race, image });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar o animal', error });
   }
@@ -114,16 +132,8 @@ app.put('/animals/:id', async (req, res) => {
   const id = req.params.id;
   const { name, race, image } = req.body;
   try {
-    const updatedAnimal = await animalCollection.findOneAndUpdate(
-      { id },
-      { $set: { name, race, image } },
-      { returnOriginal: false }
-    );
-    if (updatedAnimal.value) {
-      res.json({ message: 'Informações do animal atualizadas com sucesso', result: updatedAnimal.value });
-    } else {
-      res.status(404).json({ message: 'Animal não encontrado' });
-    }
+    await pool.query('UPDATE animals SET name = $1, race = $2, image = $3 WHERE id = $4', [name, race, image, id]);
+    res.json({ message: 'Informações do animal atualizadas com sucesso' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao atualizar o animal', error });
   }
@@ -132,25 +142,23 @@ app.put('/animals/:id', async (req, res) => {
 app.delete('/animals/:id', async (req, res) => {
   const id = req.params.id;
   try {
-    const result = await animalCollection.findOneAndDelete({ id });
-    if (result.value) {
-      res.json({ message: 'Animal deletado com sucesso' });
-    } else {
-      res.status(404).json({ message: 'Animal não encontrado' });
-    }
+    await pool.query('DELETE FROM animals WHERE id = $1', [id]);
+    res.json({ message: 'Animal deletado com sucesso' });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao deletar o animal', error });
   }
 });
 
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
+
 // Teste de pastas
+import fs from 'fs';
+
 app.get('/files', (_req, res) => {
   fs.readdir(publicPath, (err, files) => {
     if (err) return res.status(500).send('Erro ao listar arquivos');
     res.send(files);
   });
-});
-
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
 });
