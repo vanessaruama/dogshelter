@@ -17,6 +17,7 @@ interface Animal {
 export class DogsComponent implements OnInit {
   animals: Animal[] = [];
   isAdmin: boolean = false;
+  filteredAnimals: any[] = [];
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -26,6 +27,7 @@ export class DogsComponent implements OnInit {
     this.http.get<Animal[]>('http://localhost:3001/animals')
       .subscribe(data => {
         this.animals = data;
+        this.filteredAnimals = [...this.animals];
       });
   }
 
@@ -44,6 +46,20 @@ export class DogsComponent implements OnInit {
       this.router.navigate([`/edit/${id}`]); // Navega para a tela de edição com o id
     } else {
       console.error('ID is undefined. Cannot navigate to edit page.');
+    }
+  }
+
+  onSearch(event: any): void {
+    console.log(event);
+    const lowerCaseQuery = event.toLowerCase();
+
+    if (event.trim() === '') {
+      this.filteredAnimals = [...this.animals];
+    } else {
+      this.filteredAnimals = this.animals.filter(animal =>
+        animal.name.toLowerCase().includes(lowerCaseQuery) ||
+        animal.race.toLowerCase().includes(lowerCaseQuery)
+      );
     }
   }
 

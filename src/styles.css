@@ -6,6 +6,10 @@ po-input {
   --background-focus-color: red;
 }
 
+po-toaster {
+  --font-color: black;
+}
+
 :root {
   --color-brand-01-base: #f2f2f2;
   --color-neutral-light-00: rgb(102, 36, 51);

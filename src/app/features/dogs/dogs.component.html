@@ -1,14 +1,20 @@
 <po-page-default p-title="Dogs" style="margin-bottom: 80px;">
   <div style="max-height: calc(100vh - 170px); overflow-y: auto;">
-  <po-widget  class="po-sm-12" *ngFor="let animal of animals">
-    <po-image class="po-sm-6" [p-src]="animal.image"></po-image>
-    <p><strong>Nome:</strong> {{ animal.name }}</p>
-    <p><strong>Raça:</strong> {{ animal.race }}</p>
-    <div *ngIf="isAdmin">
-      <po-icon p-icon="po-icon-edit" p-label="Editar" (click)="editAnimal(animal.id)"></po-icon>
-      <po-icon p-icon="po-icon-delete" p-label="Excluir" (click)="deleteAnimal(animal.id)"></po-icon>
+    <div style="margin-bottom: 8px;">
+      <po-search
+        p-placeholder="Buscar por nome, raça..."
+        (p-change-model)="onSearch($event)">
+      </po-search>
     </div>
-  </po-widget>
+    <po-widget  class="po-sm-12" *ngFor="let animal of filteredAnimals">
+      <po-image class="po-sm-6" [p-src]="animal.image"></po-image>
+      <p><strong>Nome:</strong> {{ animal.name }}</p>
+      <p><strong>Raça:</strong> {{ animal.race }}</p>
+      <div *ngIf="isAdmin">
+        <po-icon p-icon="po-icon-edit" p-label="Editar" (click)="editAnimal(animal.id)"></po-icon>
+        <po-icon p-icon="po-icon-delete" p-label="Excluir" (click)="deleteAnimal(animal.id)"></po-icon>
+      </div>
+    </po-widget>
   </div>
 </po-page-default>
 

@@ -13,22 +13,25 @@ const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 100 * 1024 * 1024 // Limite de 10MB
+    fileSize: 100 * 1024 * 1024 // Limite de 100MB
   }
 });
-
 
 app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Path to the animal data file
+// Path para criar o arquivo animalData
 const animalDataPath = path.join(__dirname, 'animalData.json');
 
 // Função para converter buffer em base64
 const bufferToBase64 = (buffer, mimetype) => {
   return `data:${mimetype};base64,${buffer.toString('base64')}`;
 };
+
+/** ------------------------------------  */
+// ------------ API'S ---------------------
+/** ------------------------------------  */
 
 // Rota para upload de arquivos
 app.post('/upload', (req, res) => {
@@ -44,7 +47,7 @@ app.post('/upload', (req, res) => {
 
     if (!req.file) {
       console.log("Nenhum arquivo enviado");
-      return res.status(400).send('No file uploaded.');
+      return res.status(400).send('Nenhuma imagem carregada.');
     }
 
     try {
@@ -60,7 +63,7 @@ app.post('/upload', (req, res) => {
 
       res.json({
         success: true,
-        message: 'File uploaded and saved as base64 successfully',
+        message: 'Arquivo enviado e salvo como base64 com sucesso',
         file: imageData
       });
     } catch (error) {
@@ -71,7 +74,7 @@ app.post('/upload', (req, res) => {
 });
 
 // Obter imagens
-app.get('/images', (req, res) => {
+app.get('/images', (_req, res) => {
   console.log("Requisição para obter imagens");
 
   try {
@@ -83,27 +86,13 @@ app.get('/images', (req, res) => {
   }
 });
 
-// Função auxiliar para ler dados do arquivo JSON
-function readData() {
-  if (fs.existsSync(animalDataPath)) {
-    const rawData = fs.readFileSync(animalDataPath, 'utf8');
-    return JSON.parse(rawData);
-  }
-  return [];
-}
-
-// Função auxiliar para escrever dados no arquivo JSON
-function writeData(data) {
-  fs.writeFileSync(animalDataPath, JSON.stringify(data, null, 2));
-}
-
 // Obter todos os animais
 app.get('/animals', (_req, res) => {
   try {
     const animals = readData();
     res.json(animals);
   } catch (error) {
-    res.status(500).json({ message: 'Error reading data', error });
+    res.status(500).json({ message: 'Erro ao ler o json', error });
   }
 });
 
@@ -116,10 +105,10 @@ app.get('/animals/:id', (req, res) => {
     if (animal) {
       res.json(animal);
     } else {
-      res.status(404).json({ message: 'Animal not found' });
+      res.status(404).json({ message: 'Animal não encontrado' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error reading data', error });
+    res.status(500).json({ message: 'Error ao ler o json', error });
   }
 });
 
@@ -139,7 +128,7 @@ app.post('/animals', (req, res) => {
     writeData(animals);
     res.status(201).json(newAnimal);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating animal', error });
+    res.status(500).json({ message: 'Erro ao criar o animal', error });
   }
 });
 
@@ -153,28 +142,48 @@ app.put('/animals/:id', (req, res) => {
     if (index !== -1) {
       animals[index] = { ...animals[index], ...updatedAnimal };
       writeData(animals);
-      res.json({ message: 'Animal updated successfully' });
+      res.json({ message: 'Informações do animal salvas com sucesso' });
     } else {
-      res.status(404).json({ message: 'Animal not found' });
+      res.status(404).json({ message: 'Animal não encontrado' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error updating data', error });
+    res.status(500).json({ message: 'Erro ao atualizar informações', error });
   }
 });
 
-// Deletar um animal por ID
+/**
+ * Api para deletar um animal por ID
+*/
 app.delete('/animals/:id', (req, res) => {
   const id = req.params.id;
   try {
     let animals = readData();
     animals = animals.filter(a => a.id !== id);
     writeData(animals);
-    res.json({ message: 'Animal deleted successfully' });
+    res.json({ message: 'Animal deletado com sucesso' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting data', error });
+    res.status(500).json({ message: 'Erro ao deletar animal. Erro: ', error });
   }
 });
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+
+/** ------------------------------------  */
+// ------------ FUNÇÕES---------------------
+/** ------------------------------------  */
+
+// Função auxiliar para ler dados do arquivo JSON
+function readData() {
+  if (fs.existsSync(animalDataPath)) {
+    const rawData = fs.readFileSync(animalDataPath, 'utf8');
+    return JSON.parse(rawData);
+  }
+  return [];
+}
+
+// Função auxiliar para escrever dados no arquivo JSON
+function writeData(data) {
+  fs.writeFileSync(animalDataPath, JSON.stringify(data, null, 2));
+}
