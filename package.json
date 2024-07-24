@@ -21,6 +21,7 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
+    "@angular/service-worker": "^17.3.0",
     "@po-ui/ng-components": "^17.19.0",
     "@po-ui/ng-templates": "^17.19.0",
     "@po-ui/style": "^17.19.0",
