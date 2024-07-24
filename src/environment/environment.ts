@@ -3,6 +3,7 @@ import { getAnalytics } from "firebase/analytics";
 
 export const environment = {
   production: false,
+  apiUrl: "https://dogshelter.onrender.com",
   firebaseConfig: {
     apiKey: "AIzaSyBNU16EKdMNUBlj3kzIZ4JXVSAyiBCG-gY",
     authDomain: "dog-shelter-a8e65.firebaseapp.com",
