@@ -6,7 +6,7 @@
         (p-change-model)="onSearch($event)">
       </po-search>
     </div>
-    <po-widget class="po-sm-12" style="margin-bottom: 2%" *ngFor="let animal of filteredAnimals">
+    <po-widget class="po-sm-12 po-p-1" *ngFor="let animal of filteredAnimals">
       <po-image class="po-sm-6" [p-src]="animal.image"></po-image>
       <p><strong>Nome:</strong> {{ animal.name }}</p>
       <p><strong>Raça:</strong> {{ animal.race }}</p>
@@ -15,6 +15,7 @@
         <po-icon p-icon="po-icon-delete" p-label="Excluir" (click)="deleteAnimal(animal.id)"></po-icon>
       </div>
     </po-widget>
+    <div style="margin-top: 10%;"></div>
   </div>
 </po-page-default>
 
