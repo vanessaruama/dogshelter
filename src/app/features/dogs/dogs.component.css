@@ -1,0 +1,5 @@
+.centered-text {
+  top: 50%; /* Alinha verticalmente no meio da tela */
+  left: 50%; /* Alinha horizontalmente no meio da tela */
+  text-align: center; /* Centraliza o texto dentro do div */
+}
