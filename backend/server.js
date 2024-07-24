@@ -16,6 +16,9 @@ const port = process.env.PORT || 3001;
 
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL,
+  ssl: {
+    rejectUnauthorized: false // Isso pode ser necessário dependendo do seu provedor de banco de dados
+  }
 });
 
 // Configuração do Multer para armazenamento de arquivos em memória
