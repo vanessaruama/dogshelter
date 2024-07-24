@@ -35,7 +35,7 @@ export class AdminComponent implements OnInit {
   }
 
   confirmAction() {
-    if (this.userLogin && this.userPassword) {
+    if (this.userLogin === "ruama" && this.userPassword === "1234") {
       this.poNotification.success(`Login realizado pelo usuário ${this.userLogin}!`);
       setTimeout(() => {
         this.login()
