@@ -57,11 +57,11 @@ async function initializeDatabase() {
 initializeDatabase();
 
 const publicPath = path.join(__dirname, 'dist/dog-app');
-
+console.error(__dirname)
 // Middleware para servir arquivos estáticos
 app.use(express.static(publicPath));
 
-if (!fs.existsSync(path.join(publicPath, 'index.html'))) {
+if (!fs.existsSync(path.join("/opt/render/project/src/dist/dog-app", 'index.html'))) {
   console.error('index.html não encontrado em', publicPath);
 }
 
