@@ -56,20 +56,6 @@ async function initializeDatabase() {
 // Chamar a função para criar tabelas ao iniciar o servidor
 initializeDatabase();
 
-const publicPath = path.join(__dirname, 'dist/dog-app');
-console.error(__dirname)
-// Middleware para servir arquivos estáticos
-app.use(express.static(publicPath));
-
-if (!fs.existsSync(path.join("/opt/render/project/src/dist/dog-app", 'index.html'))) {
-  console.error('index.html não encontrado em', publicPath);
-}
-
-// Rota padrão para redirecionar para o frontend
-app.get('*', (_req, res) => {
-  res.sendFile(path.join("/opt/render/project/src/dist/dog-app", 'index.html'));
-});
-
 // API's
 app.post('/upload', (req, res) => {
   upload.single('file')(req, res, async (err) => {
@@ -163,4 +149,21 @@ app.get('/files', (_req, res) => {
     if (err) return res.status(500).send('Erro ao listar arquivos');
     res.send(files);
   });
+});
+
+//----------------------------------------------
+//------- Frontend ---------------------------//
+//----------------------------------------------
+const publicPath = path.join(__dirname, 'dist/dog-app');
+console.error(__dirname)
+// Middleware para servir arquivos estáticos
+app.use(express.static(publicPath));
+
+if (!fs.existsSync(path.join("/opt/render/project/src/dist/dog-app", 'index.html'))) {
+  console.error('index.html não encontrado em', publicPath);
+}
+
+// Rota padrão para redirecionar para o frontend
+app.get('*', (_req, res) => {
+  res.sendFile(path.join("/opt/render/project/src/dist/dog-app", 'index.html'));
 });
