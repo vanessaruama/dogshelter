@@ -67,7 +67,7 @@ if (!fs.existsSync(path.join("/opt/render/project/src/dist/dog-app", 'index.html
 
 // Rota padrão para redirecionar para o frontend
 app.get('*', (_req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+  res.sendFile(path.join("/opt/render/project/src/dist/dog-app", 'index.html'));
 });
 
 // API's
