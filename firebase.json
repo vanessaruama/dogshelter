@@ -13,7 +13,8 @@
     }
   ],
   "hosting": {
-    "public": "y",
+    "site": "dog-shelter-a8e65",
+    "public": "dist/dog-app",
     "ignore": [
       "firebase.json",
       "**/.*",
