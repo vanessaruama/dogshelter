@@ -98,6 +98,7 @@ app.get('/images', async (_req, res) => {
 app.get('/animals', async (_req, res) => {
   try {
     const result = await pool.query('SELECT * FROM animals');
+    console.log(result.rows, "linhas")
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao ler o banco de dados', error });
