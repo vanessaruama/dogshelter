@@ -26,20 +26,27 @@ export class DogsComponent implements OnInit {
   ngOnInit(): void {
     this.isAdmin = sessionStorage.getItem('isLoggedIn') === 'true';
 
+    this.getAnimals();
+  }
+
+  getAnimals(): void {
     this.http.get<Animal[]>(`${this.apiUrl}/animals`)
       .subscribe(data => {
         this.animals = data;
         this.filteredAnimals = [...this.animals];
+      }, error => {
+        console.error('Erro ao recuperar lista', error);
       });
   }
 
   deleteAnimal(id: string): void {
     this.http.delete(`${this.apiUrl}/animals/${id}`)
       .subscribe(response => {
-        console.log('Animal deleted successfully:', response);
+        console.log('Deleção de registro feita com sucesso', response);
+        this.getAnimals();
         this.animals = this.animals.filter(animal => animal.id !== id);
       }, error => {
-        console.error('Error deleting animal:', error);
+        console.error('Erro ao excluir o cadastro', error);
       });
   }
 
@@ -47,7 +54,7 @@ export class DogsComponent implements OnInit {
     if (id) {
       this.router.navigate([`/edit/${id}`]); // Navega para a tela de edição com o id
     } else {
-      console.error('ID is undefined. Cannot navigate to edit page.');
+      console.error('ID não definido, não foi possível editar o registro.');
     }
   }
 
