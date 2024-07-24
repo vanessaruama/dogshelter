@@ -4,7 +4,7 @@
   z-index: 1000;
   display: flex;
   justify-content: space-around;
-  padding: 2em;
+  padding: 1em;
   background-color: rgb(243, 242, 174);
   -webkit-box-shadow: 3px 3px 5px 6px #ccc;
   -moz-box-shadow: 3px 3px 5px 6px #ccc;
