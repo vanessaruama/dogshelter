@@ -6,3 +6,10 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[build.environment]
+  SQUID_API_KEY = "229d5710-5eb0-4f87-97b0-d9175792d550"
+  SQUID_APP_ID = "d8gvrmcdz1woau1u1e"
+  SQUID_BACKEND_DIR = "backend/"
+  SQUID_ENVIRONMENT_ID = "dev"
+  SQUID_REGION = "us-east-1.aws"
