@@ -56,10 +56,14 @@ async function initializeDatabase() {
 // Chamar a função para criar tabelas ao iniciar o servidor
 initializeDatabase();
 
-const publicPath = path.join(__dirname, '../../dist/dog-app');
+const publicPath = path.join(__dirname, 'dist/dog-app');
 
 // Middleware para servir arquivos estáticos
 app.use(express.static(publicPath));
+
+if (!fs.existsSync(path.join(publicPath, 'index.html'))) {
+  console.error('index.html não encontrado em', publicPath);
+}
 
 // Rota padrão para redirecionar para o frontend
 app.get('*', (_req, res) => {
