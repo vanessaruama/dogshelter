@@ -17,7 +17,7 @@ const port = process.env.PORT || 3001;
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL,
   ssl: {
-    rejectUnauthorized: false // Isso pode ser necessário dependendo do seu provedor de banco de dados
+    rejectUnauthorized: false // Isso pode ser necessário dependendo do provedor de dados
   }
 });
 
@@ -29,7 +29,7 @@ app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Função para criar tabelas
+// Função para criar tabelas no banco caso não existam
 async function initializeDatabase() {
   try {
     await pool.query(`
@@ -56,31 +56,13 @@ async function initializeDatabase() {
 // Chamar a função para criar tabelas ao iniciar o servidor
 initializeDatabase();
 
-// API's
-app.post('/upload', (req, res) => {
-  upload.single('file')(req, res, async (err) => {
-    if (err) return res.status(500).send("Erro no upload");
-    if (!req.file) return res.status(400).send('Nenhuma imagem carregada.');
-    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+//--------------------------------------------//
+//------- Frontend ---------------------------//
+//--------------------------------------------//
 
-    try {
-      await pool.query('INSERT INTO images (image, filename) VALUES ($1, $2)', [base64Image, req.file.originalname]);
-      res.json({ success: true, message: 'Arquivo enviado e salvo como base64 com sucesso' });
-    } catch (error) {
-      res.status(500).send("Erro ao processar o arquivo");
-    }
-  });
-});
-
-app.get('/images', async (_req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM images');
-    res.json(result.rows);
-  } catch (error) {
-    res.status(500).send("Erro ao ler o banco de dados");
-  }
-});
-
+//------------------------------------------------------//
+//---- GET | Retorna a lista de registros cadastrados---//
+//------------------------------------------------------//
 app.get('/animals', async (_req, res) => {
   try {
     const result = await pool.query('SELECT * FROM animals');
@@ -91,6 +73,9 @@ app.get('/animals', async (_req, res) => {
   }
 });
 
+//---------------------------------------------------------------//
+//---- GET | Retorna o registro cadastrado de acordo com o ID ---//
+//---------------------------------------------------------------//
 app.get('/animals/:id', async (req, res) => {
   const id = req.params.id;
   try {
@@ -105,6 +90,9 @@ app.get('/animals/:id', async (req, res) => {
   }
 });
 
+//----------------------------------------------//
+//---- POST | Realiza um novo cadastro ---------//
+//----------------------------------------------//
 app.post('/animals', async (req, res) => {
   const { name, race, image } = req.body;
   const id = uuidv4();
@@ -116,6 +104,9 @@ app.post('/animals', async (req, res) => {
   }
 });
 
+//------------------------------------------------------------------------------//
+//---- PUT | Realiza uma alteração no cadastro de acordo com o ID enviado ------//
+//------------------------------------------------------------------------------//
 app.put('/animals/:id', async (req, res) => {
   const id = req.params.id;
   const { name, race, image } = req.body;
@@ -127,6 +118,9 @@ app.put('/animals/:id', async (req, res) => {
   }
 });
 
+//------------------------------------------------------------------//
+//---- DELETE | Deleta um registro de acordo com o ID enviado ------//
+//------------------------------------------------------------------//
 app.delete('/animals/:id', async (req, res) => {
   const id = req.params.id;
   try {
@@ -141,27 +135,13 @@ app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
-// Teste de pastas
-import fs from 'fs';
-
-app.get('/files', (_req, res) => {
-  fs.readdir(publicPath, (err, files) => {
-    if (err) return res.status(500).send('Erro ao listar arquivos');
-    res.send(files);
-  });
-});
-
-//----------------------------------------------
+//--------------------------------------------//
 //------- Frontend ---------------------------//
-//----------------------------------------------
+//--------------------------------------------//
 const publicPath = path.join(__dirname, 'dist/dog-app');
 console.error(__dirname)
 // Middleware para servir arquivos estáticos
 app.use(express.static(publicPath));
-
-if (!fs.existsSync(path.join("/opt/render/project/src/dist/dog-app", 'index.html'))) {
-  console.error('index.html não encontrado em', publicPath);
-}
 
 // Rota padrão para redirecionar para o frontend
 app.get('*', (_req, res) => {
