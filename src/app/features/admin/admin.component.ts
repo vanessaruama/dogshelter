@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { PoModalAction, PoModalComponent, PoNotificationService } from '@po-ui/ng-components';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-admin',
@@ -10,8 +11,8 @@ import { PoModalAction, PoModalComponent, PoNotificationService } from '@po-ui/n
 export class AdminComponent implements OnInit {
   @ViewChild(PoModalComponent, { static: true }) poModal: PoModalComponent | undefined;
 
-  userLogin: string | undefined;
-  userPassword: string | undefined;
+  userLogin: string = '';
+  userPassword: string  = '';
 
   primaryAction: PoModalAction = {
     label: 'Confirm',
@@ -24,6 +25,7 @@ export class AdminComponent implements OnInit {
   constructor(
     private poNotification: PoNotificationService,
     private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -35,19 +37,20 @@ export class AdminComponent implements OnInit {
   }
 
   confirmAction() {
-    if (this.userLogin === "ruama" && this.userPassword === "1234") {
-      this.poNotification.success(`Login realizado pelo usuário ${this.userLogin}!`);
+    this.authService.login(this.userLogin, this.userPassword)
+    .then(() => {
+      this.poNotification.success(`Login realizado pelo e-mail: ${this.userLogin}!`);
       setTimeout(() => {
-        this.login()
+        this.loginSuccess()
         this.router.navigate(['/register']); // Redireciona para a página de cadastro
       }, 200);
-    } else {
-      this.poNotification.error(`Login não foi realizado!`);
-    }
+    })
+    .catch(() => {
+      this.poNotification.error('Login não foi realizado!');
+    });
   }
 
-  login(): void {
-    // Suponha que o login seja bem-sucedido
+  loginSuccess(): void {
     sessionStorage.setItem('isLoggedIn', 'true');
     this.router.navigate(['/register']); // Redireciona para a tela de cadastro
   }
