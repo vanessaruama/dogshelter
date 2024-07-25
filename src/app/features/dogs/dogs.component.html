@@ -1,8 +1,8 @@
-<po-page-default p-title="Dogs" class="po-pb-1">
+<po-page-default p-title="Dogs" class="po-pb-4">
   <div style="max-height: calc(100vh - 140px); overflow-y: auto;">
     <div style="margin-bottom: 8px;">
       <po-search
-        p-placeholder="Buscar por nome, raça..."
+        [p-literals]="customLiterals"
         (p-change-model)="onSearch($event)">
       </po-search>
     </div>

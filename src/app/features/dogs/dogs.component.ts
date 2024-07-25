@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environment/environment';
+import { PoSearchLiterals } from '@po-ui/ng-components';
 
 interface Animal {
   name: string;
   race: string;
-  image: string; // Base64 image string
+  image: string; // imagem base64
   id: string;
 }
 
@@ -19,6 +20,11 @@ export class DogsComponent implements OnInit {
   animals: Animal[] = [];
   isAdmin: boolean = false;
   filteredAnimals: any[] = [];
+  customLiterals: PoSearchLiterals = {
+    search: 'Buscar por nome, raça...',
+    clean: 'Limpar',
+  };
+
   private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private router: Router) {}

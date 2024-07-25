@@ -41,6 +41,8 @@ export class AdminComponent implements OnInit {
         this.login()
         this.router.navigate(['/register']); // Redireciona para a página de cadastro
       }, 200);
+    } else {
+      this.poNotification.error(`Login não foi realizado!`);
     }
   }
 
