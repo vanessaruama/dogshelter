@@ -1,5 +1,11 @@
-.centered-text {
-  top: 50%; /* Alinha verticalmente no meio da tela */
-  left: 50%; /* Alinha horizontalmente no meio da tela */
-  text-align: center; /* Centraliza o texto dentro do div */
+.div-custom {
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+/* Ajuste para telas maiores */
+@media (min-width: 1200px) {
+  .div-custom {
+    max-height: calc(100vh - 180px); /* Ajuste conforme necessário */
+  }
 }
